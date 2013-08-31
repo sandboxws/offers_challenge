@@ -5,6 +5,8 @@
       <p>No Offers</p>
     </div>
   <% elsif @offers.size > 0 %>
-    <%= render partial: 'offer', collection: @offers %>
+    <div class="offers">
+      <%= render partial: 'offer', collection: @offers %>
+    </div>
   <% end %>
 </div>

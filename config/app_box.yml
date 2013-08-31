@@ -4,4 +4,4 @@ default:
   ip: 109.235.143.113
   locale: de
   device_id: 2b6f0cc904d137be2e1730235f5664094b831186
-  offer_types: 112
+  offer_types: '112'

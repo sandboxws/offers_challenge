@@ -43,13 +43,21 @@ describe Offer do
   context 'get offers' do
 
     it "returns no content response" do
+      url = Offer.get_offers_api_url 'player1', 'campaign2', 1
+      stub_request(:get, url).to_return(body: "{\"code\": \"NO_CONTENT\"}")
       result = Offer.get_offers('player1', 'campaign2', 1)
       result[:code].should eq 'NO_CONTENT'
       result[:offers].should be_empty
     end
 
     it "returns invalid page error" do
+      WebMock.disable!
       expect { Offer.get_offers('player1', 'campaign2', 2) }.to raise_error('ERROR_INVALID_PAGE')
+    end
+
+    it "returns invalid uid error" do
+      WebMock.disable!
+      expect { Offer.get_offers(nil, 'campaign2', 2) }.to raise_error('ERROR_INVALID_UID')
     end
 
     it "returns valid response including offers" do
