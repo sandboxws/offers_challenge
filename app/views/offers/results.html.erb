@@ -1,0 +1,10 @@
+<div>
+  <h1>Latest Offers</h1>
+  <% if @offers.size == 0 %>
+    <div class="no_offers">
+      <p>No Offers</p>
+    </div>
+  <% elsif @offers.size > 0 %>
+    <%= render partial: 'offer', collection: @offers %>
+  <% end %>
+</div>

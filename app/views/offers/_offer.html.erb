@@ -1,0 +1,13 @@
+<div class="offer">
+  <div class="title">
+    <p><b>Offer Title</b> <%= offer[:title] %></p>
+  </div>
+  <div class="payout">
+    <p><b>Offer Payout</b> <%= offer[:payout] %></p>
+  </div>
+  <div class="thumbnail">
+    <a href="<%= offer[:thumbnail][:hires] %>" target="_blank">
+      <img src="<%= offer[:thumbnail][:lowres] %>" title="<%= "#{offer[:title]} thumbnail" %>">
+    </a>
+  </div>
+</div>
