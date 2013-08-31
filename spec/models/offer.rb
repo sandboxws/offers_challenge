@@ -38,31 +38,53 @@ describe Offer do
       url.should match 'appid='
       url.should match 'hashkey='
     end
+
+    it "validates response signature and returns true" do
+      body = '{"foo": "bar"}'
+      header = { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      Offer.validate_response_signature(header, body).should eq true
+    end
+
+    it "validates response signature and raises an error" do
+      body = '{"foo": "bar"}'
+      header = { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{AppBox.api_key}") }
+      expect { Offer.validate_response_signature(header, body) }.to raise_error('ERROR_INVALID_RESPONSE_SIGNATURE')
+    end
   end
 
   context 'get offers' do
 
     it "returns no content response" do
       url = Offer.get_offers_api_url 'player1', 'campaign2', 1
-      stub_request(:get, url).to_return(body: "{\"code\": \"NO_CONTENT\"}")
+      body = "{\"code\": \"NO_CONTENT\"}"
+      stub_request(:get, url).to_return(
+        body: body,
+        headers: { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      )
       result = Offer.get_offers('player1', 'campaign2', 1)
       result[:code].should eq 'NO_CONTENT'
       result[:offers].should be_empty
     end
 
     it "returns invalid page error" do
-      WebMock.disable!
+      url = Offer.get_offers_api_url 'player1', 'campaign2', 2
+      stub_request(:get, url).to_raise 'ERROR_INVALID_PAGE'
       expect { Offer.get_offers('player1', 'campaign2', 2) }.to raise_error('ERROR_INVALID_PAGE')
     end
 
     it "returns invalid uid error" do
-      WebMock.disable!
-      expect { Offer.get_offers(nil, 'campaign2', 2) }.to raise_error('ERROR_INVALID_UID')
+      url = Offer.get_offers_api_url nil, 'campaign2', 1
+      stub_request(:get, url).to_raise 'ERROR_INVALID_UID'
+      expect { Offer.get_offers(nil, 'campaign2', 1) }.to raise_error('ERROR_INVALID_UID')
     end
 
     it "returns valid response including offers" do
       url = Offer.get_offers_api_url 'player1', 'campaign2', 1
-      stub_request(:get, url).to_return(body: IO.read("#{Rails.root}/spec/mock/offers.json"))
+      body = IO.read("#{Rails.root}/spec/mock/offers.json")
+      stub_request(:get, url).to_return(
+        body: body,
+        headers: { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      )
       result = Offer.get_offers('player1', 'campaign2', 1)
 
       result[:code].should eq 'OK'
@@ -71,7 +93,11 @@ describe Offer do
 
     it "returns only one offer" do
       url = Offer.get_offers_api_url 'player1', 'campaign2', 1
-      stub_request(:get, url).to_return(body: IO.read("#{Rails.root}/spec/mock/offers.json"))
+      body = IO.read("#{Rails.root}/spec/mock/offers.json")
+      stub_request(:get, url).to_return(
+        body: body,
+        headers: { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      )
       result = Offer.get_offers('player1', 'campaign2', 1)
 
       result[:offers].size.should eq 1

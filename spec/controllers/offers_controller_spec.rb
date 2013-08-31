@@ -26,9 +26,15 @@ describe OffersController do
         fill_in 'pub0', with: 'campaign2'
         fill_in 'page', with: '1'
       end
+
       url = Offer.get_offers_api_url 'player1', 'campaign2', 1
-      stub_request(:get, url).to_return(body: "{\"code\": \"NO_CONTENT\"}")
+      body = "{\"code\": \"NO_CONTENT\"}"
+      stub_request(:get, url).to_return(
+        body: body,
+        headers: { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      )
       click_button 'Display Offers'
+
       expect(page).to have_content 'Latest Offers'
       expect(page).to have_css '.no_offers'
     end
@@ -40,9 +46,15 @@ describe OffersController do
         fill_in 'pub0', with: 'campaign2'
         fill_in 'page', with: '1'
       end
+
       url = Offer.get_offers_api_url 'player1', 'campaign2', 1
-      stub_request(:get, url).to_return(body: IO.read("#{Rails.root}/spec/mock/offers.json"))
+      body = IO.read("#{Rails.root}/spec/mock/offers.json")
+      stub_request(:get, url).to_return(
+        body: body,
+        headers: { 'X-Sponsorpay-Response-Signature' =>  Digest::SHA1.hexdigest("#{body}#{AppBox.api_key}") }
+      )
       click_button 'Display Offers'
+
       expect(page).to have_content 'Latest Offers'
       expect(page).to have_css '.offers'
       expect(page).to have_css '.offers .offer', count: 1
